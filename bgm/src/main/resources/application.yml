@@ -1,0 +1,8 @@
+# 应用名称
+spring:
+  application:
+    name: bgm
+
+bgm-service:
+  dllPath: "..\\BGM-JNI\\Debug\\BGM-JNI.dll"
+
