@@ -85,6 +85,12 @@ public class CloudMusicLyricService extends AbstractLyricService {
         try {
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             JsonNode rootNode = objectMapper.readTree(httpResponse.body());
+            //如果是没有歌词的情况
+            if (rootNode.has("nolyric")) {
+                if (rootNode.path("nolyric").asBoolean()) {
+                    return Collections.emptyList();
+                }
+            }
             //找到歌词部分
             JsonNode lrcNode = rootNode.path("lrc");
             String allLyrics = lrcNode.path("lyric").asText();

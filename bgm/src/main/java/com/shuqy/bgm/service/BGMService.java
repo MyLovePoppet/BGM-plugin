@@ -94,7 +94,7 @@ public class BGMService {
                 return false;
             }
             log.info("Initialize dll file at: " + dllPath + " ok!");
-            isServiceInitialized = true;
+            isDllInitialized = true;
         }
         //先检查播放器类型
         int resType = checkPlayer();
@@ -113,6 +113,9 @@ public class BGMService {
      * @return 是否初始化成功
      */
     private boolean initService(int playerType) {
+        if (playerType < 0) {
+            return false;
+        }
         currentPlayerType = playerType;
         switch (currentPlayerType) {
             case 0:
@@ -148,7 +151,16 @@ public class BGMService {
      */
     private boolean updateData() {
         int playerType = checkPlayer();
-        if (currentPlayerType != playerType) {
+
+        //检查类型
+        if (playerType < 0) {
+            log.warn("No support player type...");
+            currentPlayerType = playerType;
+            return false;
+        }
+        if ((currentPlayerType != playerType) //类型变了
+                || (!isServiceInitialized)) /*server没有初始化*/ {
+            log.info("Player type changed from " + currentPlayerType + " to " + playerType);
             currentPlayerType = playerType;
             isServiceInitialized = false;
             if (!initService(playerType)) {
@@ -159,6 +171,7 @@ public class BGMService {
         //如果是空的数据
         //这里使用==是因为MusicInfo.emptyInfo()返回的对象是唯一的，比较地址时会相等
         if (musicInfo == MusicInfo.emptyInfo()) {
+            log.warn("Get music info failed...");
             return false;
         }
         String currentID = musicInfo.getIdentifier();
