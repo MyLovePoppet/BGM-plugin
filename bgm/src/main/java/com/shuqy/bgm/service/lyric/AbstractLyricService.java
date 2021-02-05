@@ -67,13 +67,13 @@ public abstract class AbstractLyricService implements ILyricService {
             if (position < prev.getPosition()) {
                 next = prev;
                 prev = lyricIter.previous();
-                if (prev.equals(next)) {
+                if (prev == next) {
                     prev = lyricIter.previous();
                 }
             } else {//向后查找
                 prev = next;
                 next = lyricIter.next();
-                if (prev.equals(next)) {
+                if (prev == next) {
                     next = lyricIter.next();
                 }
             }
