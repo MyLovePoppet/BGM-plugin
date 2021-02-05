@@ -9,7 +9,7 @@ std::shared_ptr<IBGMProtocol> bgm;
  * Method:    checkPlayer
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_checkPlayer
+inline JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_checkPlayer
 (JNIEnv*, jobject)
 {
 	//Õ¯“◊‘∆“Ù¿÷
@@ -34,7 +34,7 @@ JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_checkPlayer
  * Method:    initNativeDll
  * Signature: (I)I
  */
-JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_initNativeDll
+inline JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_initNativeDll
 (JNIEnv*, jobject, jint playerType)
 {
 	int res = -1;
@@ -67,7 +67,7 @@ JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_initNativeDll
  * Method:    nativeGc
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_shuqy_bgm_service_BGMService_nativeGc
+inline JNIEXPORT void JNICALL Java_com_shuqy_bgm_service_BGMService_nativeGc
 (JNIEnv*, jobject)
 {
 	if (bgm)
@@ -81,7 +81,7 @@ JNIEXPORT void JNICALL Java_com_shuqy_bgm_service_BGMService_nativeGc
  * Method:    getMusicTitle
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_shuqy_bgm_service_BGMService_getMusicTitle
+inline JNIEXPORT jstring JNICALL Java_com_shuqy_bgm_service_BGMService_getMusicTitle
 (JNIEnv* env, jobject)
 {
 	if (bgm)
@@ -98,7 +98,7 @@ JNIEXPORT jstring JNICALL Java_com_shuqy_bgm_service_BGMService_getMusicTitle
  * Method:    getCurrentPosition
  * Signature: ()D
  */
-JNIEXPORT jdouble JNICALL Java_com_shuqy_bgm_service_BGMService_getCurrentPosition
+inline JNIEXPORT jdouble JNICALL Java_com_shuqy_bgm_service_BGMService_getCurrentPosition
 (JNIEnv*, jobject)
 {
 	if (bgm)
