@@ -7,7 +7,6 @@ import com.shuqy.bgm.service.info.*;
 import com.shuqy.bgm.service.lyric.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -76,8 +75,7 @@ public class BGMService {
     private double currentMusicDuration = 0.0;
     private String currentLyric = "";
     private List<Lyric> currentMusicLyricList = Collections.emptyList();
-    public ListIterator<Lyric> currentLyricIterator = currentMusicLyricList.listIterator();
-
+    private ListIterator<Lyric> currentLyricIterator = currentMusicLyricList.listIterator();
 
     /**
      * 初始化服务
@@ -123,6 +121,8 @@ public class BGMService {
                 infoService = new CloudMusicInfoService();
                 break;
             case 1:
+                lyricService = new QQMusicLyricService();
+                infoService = new QQMusicInfoService();
                 break;
 
 
@@ -167,7 +167,19 @@ public class BGMService {
                 return false;
             }
         }
-        MusicInfo musicInfo = infoService.getMusicInfo();
+        switch (currentPlayerType) {
+            case 0:
+                return updateCloudMusicData();
+            case 1:
+                return updateQQMusicData();
+            default:
+                return false;
+        }
+    }
+
+    //网易云音乐更新数据方式
+    private boolean updateCloudMusicData() {
+        MusicInfo musicInfo = infoService.getMusicInfo(null);
         //如果是空的数据
         //这里使用==是因为MusicInfo.emptyInfo()返回的对象是唯一的，比较地址时会相等
         if (musicInfo == MusicInfo.emptyInfo()) {
@@ -186,6 +198,27 @@ public class BGMService {
             //更新歌曲的歌词
             currentMusicLyricList = lyricService.getCurrentLyrics(currentMusicIdentifier);
             //更新歌词迭代器
+            currentLyricIterator = currentMusicLyricList.listIterator();
+        }
+        //更新当前position
+        currentMusicPosition = getCurrentPosition();
+        //更新当前歌词显示
+        currentLyric = lyricService.getLyricByPosition(currentLyricIterator, currentMusicPosition).getText();
+        return true;
+    }
+
+    //QQ音乐更新数据方式
+    private boolean updateQQMusicData() {
+        String title = getMusicTitle();
+        //根据title来判断
+        if (!currentMusicTitle.equals(title)) {
+            currentMusicTitle = title;
+            //音乐信息
+            MusicInfo musicInfo = infoService.getMusicInfo(currentMusicTitle);
+            //更新数据
+            currentMusicDuration = musicInfo.getDuration();
+            currentMusicIdentifier = musicInfo.getIdentifier();
+            currentMusicLyricList = lyricService.getCurrentLyrics(currentMusicIdentifier);
             currentLyricIterator = currentMusicLyricList.listIterator();
         }
         //更新当前position
