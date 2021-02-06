@@ -12,6 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -45,7 +46,7 @@ public class CloudMusicLyricService extends AbstractLyricService {
             return new Lyric(position, text);
         } else {
             log.error("Cloud music deFormat lyric error: " + rawTextLyric);
-            return Lyric.emptyLyric();
+            return new Lyric(0.0, rawTextLyric);
         }
     }
 
@@ -100,6 +101,8 @@ public class CloudMusicLyricService extends AbstractLyricService {
             for (String rawLyricText : lyricStr) {
                 lyricList.add(deFormat(rawLyricText));
             }
+            //排序一下以防万一
+            lyricList.sort(Comparator.comparingDouble(Lyric::getPosition));
             return lyricList;
         } catch (IOException | InterruptedException e) {
             log.error("Lyric format error: " + e.getMessage());
