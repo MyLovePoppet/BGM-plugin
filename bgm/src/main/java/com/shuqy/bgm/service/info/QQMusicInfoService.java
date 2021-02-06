@@ -20,6 +20,26 @@ public class QQMusicInfoService implements IMusicInfoService {
     private final String infoURL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&n=1&w={0}&format=json";
     private final HttpClient httpClient = HttpClient.newBuilder().build();
 
+    /**
+     * 解析如下json
+     * {
+     *   "code": 0,
+     *   "data": {
+     *     "keyword": "My Heart Will Go On 满舒克&#047;MuSik I&#047;廖伟珊",      ---->title
+     *     "song": {
+     *       "list": [
+     *         {
+     *           "interval": 262,   ---->时长
+     *           "songmid": "002WFWqf1cLI08",   ----->ID
+     *           }
+     *           ],
+     *       "totalnum": 69
+     *     },
+     * }
+     * @param title 当前播放歌曲的title（不是必须的参数）
+     *
+     * @return MusicInfo
+     */
     @Override
     public MusicInfo getMusicInfo(String title) {
         title = URLEncoder.encode(title, StandardCharsets.UTF_8);
@@ -28,7 +48,6 @@ public class QQMusicInfoService implements IMusicInfoService {
                 .build();
         try {
             HttpResponse<String> httpResponse = httpClient.send(infoRequest, HttpResponse.BodyHandlers.ofString());
-            System.out.println(httpResponse.body());
             JsonNode rootNode = objectMapper.readTree(httpResponse.body());
             JsonNode songList = rootNode.path("data").path("song").path("list");
             JsonNode song = songList.path(0);
