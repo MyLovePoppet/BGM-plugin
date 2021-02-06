@@ -3,6 +3,7 @@
 #include "JNIUtils.h"
 #include "IBGMProtocol.h"
 #include "CloudMusicImpl.h"
+#include "QQMusicImpl.h"
 std::shared_ptr<IBGMProtocol> bgm;
 /*
  * Class:     com_shuqy_bgm_service_BGMService
@@ -43,6 +44,20 @@ inline JNIEXPORT jint JNICALL Java_com_shuqy_bgm_service_BGMService_initNativeDl
 	case 0:
 		//网易云音乐实现
 		bgm = std::make_shared<CloudMusicImpl>();
+		//初始化返回结果
+		if (bgm->initNativeProtocol())
+		{
+			res = 0;
+		} //初始化失败
+		else
+		{
+			bgm.reset();
+			res = GetLastError();
+		}
+		break;
+	case 1:
+		//QQ音乐实现
+		bgm = std::make_shared<QQMusicImpl>();
 		//初始化返回结果
 		if (bgm->initNativeProtocol())
 		{
