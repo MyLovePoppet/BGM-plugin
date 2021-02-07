@@ -45,7 +45,7 @@ public class QQMusicLyricService extends AbstractLyricService{
             String text = rawTextLyric.substring(rightBracket + 1);
             return new Lyric(position, text);
         } else {
-            log.error("Cloud music deFormat lyric error: " + rawTextLyric);
+            log.error("QQ music deFormat lyric error: " + rawTextLyric);
             return new Lyric(0.0, rawTextLyric);
         }
     }
