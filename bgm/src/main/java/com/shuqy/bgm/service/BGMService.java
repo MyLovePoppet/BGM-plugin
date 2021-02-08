@@ -124,8 +124,10 @@ public class BGMService {
                 lyricService = new QQMusicLyricService();
                 infoService = new QQMusicInfoService();
                 break;
-
-
+            case 2:
+                lyricService = new KuGouMusicLyricService();
+                infoService = new KuGouMusicInfoService();
+                break;
             default: {
                 isServiceInitialized = false;
                 return false;
@@ -172,6 +174,8 @@ public class BGMService {
                 return updateCloudMusicData();
             case 1:
                 return updateQQMusicData();
+            case 2:
+                return updateKuGouMusicData();
             default:
                 return false;
         }
@@ -209,6 +213,27 @@ public class BGMService {
 
     //QQ音乐更新数据方式
     private boolean updateQQMusicData() {
+        String title = getMusicTitle();
+        //根据title来判断
+        if (!currentMusicTitle.equals(title)) {
+            currentMusicTitle = title;
+            //音乐信息
+            MusicInfo musicInfo = infoService.getMusicInfo(currentMusicTitle);
+            //更新数据
+            currentMusicDuration = musicInfo.getDuration();
+            currentMusicIdentifier = musicInfo.getIdentifier();
+            currentMusicLyricList = lyricService.getCurrentLyrics(currentMusicIdentifier);
+            currentLyricIterator = currentMusicLyricList.listIterator();
+        }
+        //更新当前position
+        currentMusicPosition = getCurrentPosition();
+        //更新当前歌词显示
+        currentLyric = lyricService.getLyricByPosition(currentLyricIterator, currentMusicPosition).getText();
+        return true;
+    }
+
+    //QQ音乐更新数据方式
+    private boolean updateKuGouMusicData() {
         String title = getMusicTitle();
         //根据title来判断
         if (!currentMusicTitle.equals(title)) {
