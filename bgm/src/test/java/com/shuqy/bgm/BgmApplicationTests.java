@@ -6,6 +6,7 @@ import com.shuqy.bgm.entity.MusicInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -13,7 +14,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.Inflater;
 
 @SpringBootTest
 class BgmApplicationTests {
@@ -152,6 +159,80 @@ class BgmApplicationTests {
             HttpResponse<String> httpResponse = httpClient.send(lyricRequest, HttpResponse.BodyHandlers.ofString());
             System.out.println(httpResponse.body());
         } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * 解压缩
+     *
+     * @param data 待压缩的数据
+     * @return byte[] 解压缩后的数据
+     */
+    public static byte[] decompress(byte[] data) {
+        byte[] output = new byte[0];
+
+        Inflater decompresser = new Inflater();
+        decompresser.reset();
+        decompresser.setInput(data);
+
+        ByteArrayOutputStream o = new ByteArrayOutputStream(data.length);
+        try {
+            byte[] buf = new byte[1024];
+            while (!decompresser.finished()) {
+                int i = decompresser.inflate(buf);
+                o.write(buf, 0, i);
+            }
+            output = o.toByteArray();
+        } catch (Exception e) {
+            output = data;
+            e.printStackTrace();
+        } finally {
+            try {
+                o.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        decompresser.end();
+        return output;
+    }
+
+    @Test
+    void testKuGouMusicLyric() {
+        try {
+            byte[] bytes = Files.readAllBytes(Paths.get("E:\\KuGou\\Lyric", "谭艳 - 光明-31737d4db6e2de1d80cd260695d23743-47370898-00000000.krc"));
+            char[] encrypt_key = {'@', 'G', 'a', 'w', '^', '2', 't', 'G', 'Q', '6', '1', '-', 'Î', 'Ò', 'n', 'i'};
+            //version
+            byte[] content = Arrays.copyOfRange(bytes, 4, bytes.length);
+            for (int i = 0; i < content.length; i++) {
+                content[i] = (byte) (content[i] ^ encrypt_key[i % encrypt_key.length]);
+            }
+            content = decompress(content);
+            String contentString = new String(content);
+
+            double total = 0.0;
+            String[] contents = contentString.split("\n");
+            for (String s : contents) {
+                if (s.startsWith("[total")) {
+                    total = Double.parseDouble(s.substring(7, s.indexOf(']')));
+                    break;
+                }
+            }
+
+            System.out.println(total);
+            Pattern pattern = Pattern.compile("\\[\\d+,\\d+]");
+            for (String s : contents) {
+                Matcher matcher = pattern.matcher(s);
+                if (matcher.find()) {
+                    s = s.replaceAll("<\\d+,\\d+,\\d+>", "");
+                    System.out.println(s);
+                }
+            }
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
