@@ -179,7 +179,7 @@ public class BGMService {
 
     //网易云音乐更新数据方式
     private boolean updateCloudMusicData() {
-        MusicInfo musicInfo = infoService.getMusicInfo(null);
+        MusicInfo musicInfo = infoService.getMusicInfo();
         //如果是空的数据
         //这里使用==是因为MusicInfo.emptyInfo()返回的对象是唯一的，比较地址时会相等
         if (musicInfo == MusicInfo.emptyInfo()) {

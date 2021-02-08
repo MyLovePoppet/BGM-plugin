@@ -23,26 +23,29 @@ public class QQMusicInfoService implements IMusicInfoService {
     /**
      * 解析如下json
      * {
-     *   "code": 0,
-     *   "data": {
-     *     "keyword": "My Heart Will Go On 满舒克&#047;MuSik I&#047;廖伟珊",      ---->title
-     *     "song": {
-     *       "list": [
-     *         {
-     *           "interval": 262,   ---->时长
-     *           "songmid": "002WFWqf1cLI08",   ----->ID
-     *           }
-     *           ],
-     *       "totalnum": 69
-     *     },
+     * "code": 0,
+     * "data": {
+     * "keyword": "My Heart Will Go On 满舒克&#047;MuSik I&#047;廖伟珊",      ---->title
+     * "song": {
+     * "list": [
+     * {
+     * "interval": 262,   ---->时长
+     * "songmid": "002WFWqf1cLI08",   ----->ID
      * }
-     * @param title 当前播放歌曲的title（不是必须的参数）
+     * ],
+     * "totalnum": 69
+     * },
+     * }
      *
+     * @param args args 0:当前播放歌曲的title（不是必须的参数）
      * @return MusicInfo
      */
     @Override
-    public MusicInfo getMusicInfo(String title) {
-        title = URLEncoder.encode(title, StandardCharsets.UTF_8);
+    public MusicInfo getMusicInfo(String... args) {
+        if (args.length < 1) {
+            return MusicInfo.emptyInfo();
+        }
+        String title = URLEncoder.encode(args[0], StandardCharsets.UTF_8);
         HttpRequest infoRequest = HttpRequest.newBuilder()
                 .uri(URI.create(MessageFormat.format(infoURL, title)))
                 .build();

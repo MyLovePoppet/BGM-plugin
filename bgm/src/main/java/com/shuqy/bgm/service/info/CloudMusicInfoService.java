@@ -26,7 +26,7 @@ public class CloudMusicInfoService implements IMusicInfoService {
      * @return 当前播放的歌曲信息
      */
     @Override
-    public MusicInfo getMusicInfo(String title) {
+    public MusicInfo getMusicInfo(String ...args) {
         try {
             JsonNode rootNode = objectMapper.readTree(Files.newBufferedReader(historyPath));
             //返回的是数组，取第一个即可
