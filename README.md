@@ -21,6 +21,17 @@
 | 1.0  | 适配网易云音乐 | 2021/2/4 |
 | 2.0  | 适配QQ音乐 | 2021/2/6 |
 | 3.0  | 适配酷狗音乐 | 2021/2/8 |
+/ 3.1  | 播放器版本适配 | 2021/2/23 |
+
+如遇到position字段不准确的情况出现，请自行使用CE修改器查看offset偏移值，并修改```VersionUtils.cpp```
+文件内的信息
+
+```C++
+std::map<std::wstring, DWORD_PTR> VersionUtils::cloudMusicVersionMap = { {L"2.7.6.2102", 0x8BEAD8} };
+//请自行修改QQ音乐与酷狗音乐的版本与对应的偏移值，使用CE修改器自行查看即可
+std::map<std::wstring, DWORD_PTR> VersionUtils::qqMusicVersionMap = { {L"", 0x9E5348} };
+std::map<std::wstring, DWORD_PTR> VersionUtils::kuGouMusicVersionMap = { {L"", 0x38CF98} };
+```
 
 
 
