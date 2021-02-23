@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "QQMusicImpl.h"
 #include <Psapi.h>
+#include "VersionUtils.h"
 
 bool QQMusicImpl::initNativeProtocol()
 {
@@ -60,7 +61,17 @@ bool QQMusicImpl::initNativeProtocol()
 	//加上偏移地址
 	if (baseAddress != 0)
 	{
-		offsetAddress = 0x9E5348 + baseAddress;
+		std::wstring version;
+		bool res = VersionUtils::GetFileVersion(processHandle, version);
+		if (res)
+		{
+			offsetAddress = baseAddress + VersionUtils::getOffsetByVersion(version, PlayerType::QQ_MUSIC);
+		}
+		//默认
+		else
+		{
+			offsetAddress = 0x9E5348 + baseAddress;
+		}
 	}
 	else
 	{

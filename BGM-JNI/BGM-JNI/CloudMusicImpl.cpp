@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CloudMusicImpl.h"
 #include <Psapi.h>
-#include <iostream>
+#include "VersionUtils.h"
 
 bool CloudMusicImpl::initNativeProtocol()
 {
@@ -61,7 +61,17 @@ bool CloudMusicImpl::initNativeProtocol()
 	//加上偏移地址
 	if (baseAddress != 0)
 	{
-		offsetAddress = 0x8669C8 + baseAddress;
+		std::wstring version;
+		bool res = VersionUtils::GetFileVersion(processHandle, version);
+		if (res)
+		{
+			offsetAddress = baseAddress + VersionUtils::getOffsetByVersion(version, PlayerType::CLOUD_MUSIC);
+		}
+		//默认
+		else
+		{
+			offsetAddress = 0x8669C8 + baseAddress;
+		}
 	}
 	else
 	{
@@ -69,6 +79,7 @@ bool CloudMusicImpl::initNativeProtocol()
 	}
 	return true;
 }
+
 //回收Handle
 void CloudMusicImpl::nativeGc()
 {
@@ -78,6 +89,7 @@ void CloudMusicImpl::nativeGc()
 		processHandle = NULL;
 	}
 }
+
 //获取title
 std::wstring CloudMusicImpl::getTitle()
 {
@@ -85,6 +97,7 @@ std::wstring CloudMusicImpl::getTitle()
 	GetWindowText(hwnd, titleStr, 256);
 	return std::wstring(titleStr);
 }
+
 //获取Position
 double CloudMusicImpl::getPosition()
 {

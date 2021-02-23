@@ -1,9 +1,8 @@
 #include "pch.h"
 #include "KuGouMusicImpl.h"
-
-#include <iostream>
 #include <Psapi.h>
 #include <regex>
+#include "VersionUtils.h"
 
 bool KuGouMusicImpl::initNativeProtocol()
 {
@@ -91,7 +90,17 @@ bool KuGouMusicImpl::initNativeProtocol()
 	//加上偏移地址
 	if (baseAddress != 0)
 	{
-		offsetAddress = 0x38CF98 + baseAddress;
+		std::wstring version;
+		bool res = VersionUtils::GetFileVersion(processHandle, version);
+		if (res)
+		{
+			offsetAddress = baseAddress + VersionUtils::getOffsetByVersion(version, PlayerType::KUGOU_MUSIC);
+		}
+		//默认
+		else
+		{
+			offsetAddress = 0x38CF98 + baseAddress;
+		}
 	}
 	else
 	{
