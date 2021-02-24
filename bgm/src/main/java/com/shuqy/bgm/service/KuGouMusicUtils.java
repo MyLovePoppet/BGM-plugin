@@ -12,6 +12,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.Inflater;
 
 @Slf4j
@@ -43,6 +46,8 @@ public class KuGouMusicUtils {
     private static String currentTitle = "";
     private static List<String> currentLyric = Collections.emptyList();
     private static double currentDuration = 0.0;
+    //读写锁
+    private static final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     private KuGouMusicUtils() {
     }
@@ -83,9 +88,8 @@ public class KuGouMusicUtils {
         return output;
     }
 
-    public static synchronized boolean parse(String title) {
+    public static boolean parse(String title) {
         if (!title.equals(currentTitle)) {
-            currentTitle = title;
             byte[] bytes;
             try {
                 Path lyricPath = Files.list(Paths.get(KUGOU_LYRIC_PATH))
@@ -104,29 +108,57 @@ public class KuGouMusicUtils {
             }
             content = decompress(content);
             String contentString = new String(content);
-
             String[] contents = contentString.split("\r\n");
-            currentLyric = new LinkedList<>();
-            for (String s : contents) {
-                if (s.startsWith("[total")) {
-                    currentDuration = Double.parseDouble(s.substring(7, s.indexOf(']'))) / 1000.0;
+            //加写锁更新数据
+            readWriteLock.writeLock().lock();
+            try {
+                currentTitle = title;
+                currentLyric = new LinkedList<>();
+                for (String s : contents) {
+                    if (s.startsWith("[total")) {
+                        currentDuration = Double.parseDouble(s.substring(7, s.indexOf(']'))) / 1000.0;
+                    }
+                    currentLyric.add(s);
                 }
-                currentLyric.add(s);
+            } finally {
+                //释放写锁
+                readWriteLock.writeLock().unlock();
             }
         }
         return true;
     }
 
-    public static synchronized String getCurrentTitle() {
-        return currentTitle;
+    public static String getCurrentTitle() {
+        //加读锁
+        readWriteLock.readLock().lock();
+        try {
+            return currentTitle;
+        } finally {
+            //释放读锁
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public static synchronized List<String> getCurrentLyric() {
-        return currentLyric;
+    public static List<String> getCurrentLyric() {
+        //加读锁
+        readWriteLock.readLock().lock();
+        try {
+            return currentLyric;
+        } finally {
+            //释放读锁
+            readWriteLock.readLock().unlock();
+        }
     }
 
-    public static synchronized double getCurrentDuration() {
-        return currentDuration;
+    public static double getCurrentDuration() {
+        //加读锁
+        readWriteLock.readLock();
+        try {
+            return currentDuration;
+        } finally {
+            //释放读锁
+            readWriteLock.readLock().unlock();
+        }
     }
 
 }
