@@ -186,7 +186,7 @@ public class BGMService {
                 default:
                     return false;
             }
-        }finally {
+        } finally {
             readWriteLock.writeLock().unlock();
         }
     }
@@ -269,18 +269,24 @@ public class BGMService {
      * @return BGMINFO
      */
     public BGMInfo getCurrentBGMInfo() {
-        //加上读锁
-        readWriteLock.readLock().lock();
-        try {
-            if (updateData()) {
-                log.info("update BGM info success!");
+        if (updateData()) {
+            log.info("update BGM info success!");
+            //加上读锁
+            readWriteLock.readLock().lock();
+            try {
                 return new BGMInfo(200, currentPlayerType, currentMusicTitle, currentMusicDuration, currentMusicPosition, currentLyric);
-            } else {
-                log.error("update BGM info failed!");
-                return BGMInfo.emptyBGMInfo();
+            } finally {
+                readWriteLock.readLock().unlock();
             }
-        } finally {
-            readWriteLock.readLock().unlock();
+        } else {
+            log.error("update BGM info failed!");
+            //加上读锁
+            readWriteLock.readLock().lock();
+            try {
+                return BGMInfo.emptyBGMInfo();
+            } finally {
+                readWriteLock.readLock().unlock();
+            }
         }
     }
 
