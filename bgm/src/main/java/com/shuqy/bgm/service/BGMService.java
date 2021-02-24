@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Slf4j
 @Service
@@ -76,6 +78,9 @@ public class BGMService {
     private String currentLyric = "";
     private List<Lyric> currentMusicLyricList = Collections.emptyList();
     private ListIterator<Lyric> currentLyricIterator = currentMusicLyricList.listIterator();
+
+    //读写锁
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     /**
      * 初始化服务
@@ -153,31 +158,36 @@ public class BGMService {
      */
     private boolean updateData() {
         int playerType = checkPlayer();
-
-        //检查类型
-        if (playerType < 0) {
-            log.warn("No support player type...");
-            currentPlayerType = playerType;
-            return false;
-        }
-        if ((currentPlayerType != playerType) //类型变了
-                || (!isServiceInitialized)) /*server没有初始化*/ {
-            log.info("Player type changed from " + currentPlayerType + " to " + playerType);
-            currentPlayerType = playerType;
-            isServiceInitialized = false;
-            if (!initService(playerType)) {
+        //加写锁
+        readWriteLock.writeLock().lock();
+        try {
+            //检查类型
+            if (playerType < 0) {
+                log.warn("No support player type...");
+                currentPlayerType = playerType;
                 return false;
             }
-        }
-        switch (currentPlayerType) {
-            case 0:
-                return updateCloudMusicData();
-            case 1:
-                return updateQQMusicData();
-            case 2:
-                return updateKuGouMusicData();
-            default:
-                return false;
+            if ((currentPlayerType != playerType) //类型变了
+                    || (!isServiceInitialized)) /*server没有初始化*/ {
+                log.info("Player type changed from " + currentPlayerType + " to " + playerType);
+                currentPlayerType = playerType;
+                isServiceInitialized = false;
+                if (!initService(playerType)) {
+                    return false;
+                }
+            }
+            switch (currentPlayerType) {
+                case 0:
+                    return updateCloudMusicData();
+                case 1:
+                    return updateQQMusicData();
+                case 2:
+                    return updateKuGouMusicData();
+                default:
+                    return false;
+            }
+        }finally {
+            readWriteLock.writeLock().unlock();
         }
     }
 
@@ -259,12 +269,18 @@ public class BGMService {
      * @return BGMINFO
      */
     public BGMInfo getCurrentBGMInfo() {
-        if (updateData()) {
-            log.info("update BGM info success!");
-            return new BGMInfo(200, currentPlayerType, currentMusicTitle, currentMusicDuration, currentMusicPosition, currentLyric);
-        } else {
-            log.error("update BGM info failed!");
-            return BGMInfo.emptyBGMInfo();
+        //加上读锁
+        readWriteLock.readLock().lock();
+        try {
+            if (updateData()) {
+                log.info("update BGM info success!");
+                return new BGMInfo(200, currentPlayerType, currentMusicTitle, currentMusicDuration, currentMusicPosition, currentLyric);
+            } else {
+                log.error("update BGM info failed!");
+                return BGMInfo.emptyBGMInfo();
+            }
+        } finally {
+            readWriteLock.readLock().unlock();
         }
     }
 
